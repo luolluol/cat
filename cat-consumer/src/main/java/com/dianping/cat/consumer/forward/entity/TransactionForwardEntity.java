@@ -11,6 +11,7 @@ public class TransactionForwardEntity {
     private long totalCount;
     private long failCount;
     private long sum;
+    private long avg;
 
     public String getDomain() {
         return domain;
@@ -91,5 +92,13 @@ public class TransactionForwardEntity {
     public TransactionForwardEntity setSum(long sum) {
         this.sum = sum;
         return this;
+    }
+
+    public long getAvg() {
+        return avg;
+    }
+
+    public void setAvg(long avg) {
+        this.avg = avg;
     }
 }
