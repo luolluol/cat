@@ -56,6 +56,10 @@ public class ForwardAnalyzer extends AbstractMessageAnalyzer<Object> implements 
 
     private void processTransaction(TransactionForwardDomain root, Transaction transaction) {
 
+        String transactionType = transaction.getType();
+        if ("_CatMergeTree".equals(transactionType)) {
+            return;
+        }
         TransactionForwardDomain transactionForwardDomain = new TransactionForwardDomain();
         transactionForwardDomain.setDomain(root.getDomain());
         transactionForwardDomain.setIp(root.getIp());
