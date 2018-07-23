@@ -28,6 +28,7 @@ public class TransactionDaoImpl implements TransactionDao {
                 .addField("totalCount", transactionForwardEntity.getTotalCount())
                 .addField("failCount", transactionForwardEntity.getFailCount())
                 .addField("sum", transactionForwardEntity.getSum())
+                .addField("avg", transactionForwardEntity.getAvg())
                 .build();
 
         if (null != influxdbClientHolder.getUdpPort()) {

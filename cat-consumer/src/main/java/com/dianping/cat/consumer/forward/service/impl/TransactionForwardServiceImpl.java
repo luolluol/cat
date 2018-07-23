@@ -40,7 +40,7 @@ public class TransactionForwardServiceImpl implements ForwardService<Transaction
 
         long now = System.currentTimeMillis();
         if(periodTimeStamp + 145000 < now){//保护策略，按分钟分片后，145秒以前的分片消息丢弃
-            m_logger.info("失效消息丢弃！");
+            m_logger.info("失效消息丢弃！ " + transactionForwardDomain);
             return 0;
         }
 
@@ -136,6 +136,11 @@ public class TransactionForwardServiceImpl implements ForwardService<Transaction
             transactionForwardEntity.setTotalCount(this.totalCount.get());
             transactionForwardEntity.setFailCount(this.failCount.get());
             transactionForwardEntity.setSum(this.sum.get());
+            if(this.totalCount.get() > 0){
+                transactionForwardEntity.setAvg(this.sum.get() / this.totalCount.get());
+            } else {
+                transactionForwardEntity.setAvg(0);
+            }
             transactionDao.insert(transactionForwardEntity);
             minuteStatisticsMap.remove(getKey());
         }
