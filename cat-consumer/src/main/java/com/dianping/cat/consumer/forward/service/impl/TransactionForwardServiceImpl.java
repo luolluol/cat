@@ -36,10 +36,10 @@ public class TransactionForwardServiceImpl implements ForwardService<Transaction
 
     @Override
     public int forward(TransactionForwardDomain transactionForwardDomain) {
-        long periodTimeStamp = transactionForwardDomain.getCreationTimestamp() - transactionForwardDomain.getCreationTimestamp() % 60000;
+        long periodTimeStamp = transactionForwardDomain.getEndTimestamp() - transactionForwardDomain.getEndTimestamp() % 60000;
 
         long now = System.currentTimeMillis();
-        if(periodTimeStamp + 145000 < now){//保护策略，按分钟分片后，145秒以前的分片消息丢弃
+        if(periodTimeStamp + 70000 < now){//保护策略，按分钟分片后，70秒以前的分片消息丢弃
             m_logger.info("失效消息丢弃！ " + transactionForwardDomain);
             return 0;
         }
@@ -55,7 +55,7 @@ public class TransactionForwardServiceImpl implements ForwardService<Transaction
                 if (null == minuteStatistics) {
                     minuteStatistics = new MinuteStatistics();
                     minuteStatistics.setPeriodTimestamp(periodTimeStamp);
-                    minuteStatistics.setExecuteTimestamp(minuteStatistics.getPeriodTimestamp() + 150000);//分片后150执行入库
+                    minuteStatistics.setExecuteTimestamp(minuteStatistics.getPeriodTimestamp() + 70000);//分片后70s执行入库
                     minuteStatistics.setDomain(transactionForwardDomain.getDomain());
                     minuteStatistics.setIp(transactionForwardDomain.getIp());
                     minuteStatistics.setType(transactionForwardDomain.getType());

@@ -9,6 +9,7 @@ public class TransactionForwardDomain {
     private String status;
     private long durationInMillis;
     private long creationTimestamp;
+    private long endTimestamp;
 
     public String getDomain() {
         return domain;
@@ -73,6 +74,15 @@ public class TransactionForwardDomain {
         return this;
     }
 
+    public long getEndTimestamp() {
+        return endTimestamp;
+    }
+
+    public TransactionForwardDomain setEndTimestamp(long endTimestamp) {
+        this.endTimestamp = endTimestamp;
+        return this;
+    }
+
     @Override
     public String toString() {
         return "domain=" + domain +
@@ -81,6 +91,7 @@ public class TransactionForwardDomain {
                 ",name=" + name +
                 ",status=" + status +
                 ",durationInMillis=" + durationInMillis +
-                ",creationTimestamp=" + creationTimestamp;
+                ",creationTimestamp=" + creationTimestamp +
+                ",endTimestamp=" + endTimestamp;
     }
 }

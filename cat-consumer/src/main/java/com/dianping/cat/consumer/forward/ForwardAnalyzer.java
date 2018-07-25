@@ -68,6 +68,7 @@ public class ForwardAnalyzer extends AbstractMessageAnalyzer<Object> implements 
         transactionForwardDomain.setDurationInMillis(transaction.getDurationInMillis());
         transactionForwardDomain.setStatus(transaction.getStatus());
         transactionForwardDomain.setCreationTimestamp(transaction.getTimestamp());
+        transactionForwardDomain.setEndTimestamp(transaction.getTimestamp() + transaction.getDurationInMillis());
         forward(transactionForwardDomain);
 
         List<Message> childs = transaction.getChildren();
