@@ -1,10 +1,10 @@
 package com.dianping.cat.consumer.forward.service.impl;
 
 import com.dianping.cat.configuration.NetworkInterfaceManager;
-import com.dianping.cat.consumer.forward.dao.TransactionDao;
 import com.dianping.cat.consumer.forward.domain.TransactionForwardDomain;
 import com.dianping.cat.consumer.forward.entity.TransactionForwardEntity;
 import com.dianping.cat.consumer.forward.service.ForwardService;
+import com.dianping.cat.consumer.forward.service.TransactionPersistService;
 import org.codehaus.plexus.logging.LogEnabled;
 import org.codehaus.plexus.logging.Logger;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Initializable;
@@ -16,6 +16,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
 
 public class TransactionForwardServiceImpl implements ForwardService<TransactionForwardDomain>, LogEnabled, Initializable {
 
@@ -30,28 +31,27 @@ public class TransactionForwardServiceImpl implements ForwardService<Transaction
     private BlockingQueue delayQueue;
 
     @Inject
-    private TransactionDao transactionDao;
+    private TransactionPersistService transactionPersistService;
 
     private String m_ip = NetworkInterfaceManager.INSTANCE.getLocalHostAddress();
 
     @Override
     public int forward(TransactionForwardDomain transactionForwardDomain) {
         long periodTimeStamp = transactionForwardDomain.getEndTimestamp() - transactionForwardDomain.getEndTimestamp() % 60000;
+        transactionForwardDomain.setPeriodTimeStamp(periodTimeStamp);
 
         long now = System.currentTimeMillis();
-        if(periodTimeStamp + 70000 < now){//保护策略，按分钟分片后，70秒以前的分片消息丢弃
+        if (periodTimeStamp + 70000 < now) {//保护策略，按分钟分片后，70秒以前的分片消息丢弃
             m_logger.info("失效消息丢弃！ " + transactionForwardDomain);
             return 0;
         }
 
-        String key = transactionForwardDomain.getDomain() + "-" + transactionForwardDomain.getIp() + "-"
-                + transactionForwardDomain.getType() + "-" + transactionForwardDomain.getName() + "-" + m_ip + "-" + periodTimeStamp;
+        String key = KEY_GENERATOR_TRANSACTIONFORWARDDOMAIN.apply(transactionForwardDomain);
         MinuteStatistics minuteStatistics = minuteStatisticsMap.get(key);
 
         if (null == minuteStatistics) {
             synchronized (this) {
-                minuteStatistics = minuteStatisticsMap.get(transactionForwardDomain.getDomain() + transactionForwardDomain.getIp()
-                        + transactionForwardDomain.getType() + transactionForwardDomain.getName());
+                minuteStatistics = minuteStatisticsMap.get(key);
                 if (null == minuteStatistics) {
                     minuteStatistics = new MinuteStatistics();
                     minuteStatistics.setPeriodTimestamp(periodTimeStamp);
@@ -91,11 +91,7 @@ public class TransactionForwardServiceImpl implements ForwardService<Transaction
         threadPoolExecutor.prestartAllCoreThreads();
     }
 
-    private interface KeyGenerator{
-        String getKey();
-    }
-
-    private class MinuteStatistics implements Delayed, Runnable, KeyGenerator {
+    private class MinuteStatistics implements Delayed, Runnable {
         private long periodTimestamp;
         private long executeTimestamp;
         private String domain;
@@ -136,13 +132,13 @@ public class TransactionForwardServiceImpl implements ForwardService<Transaction
             transactionForwardEntity.setTotalCount(this.totalCount.get());
             transactionForwardEntity.setFailCount(this.failCount.get());
             transactionForwardEntity.setSum(this.sum.get());
-            if(this.totalCount.get() > 0){
+            if (this.totalCount.get() > 0) {
                 transactionForwardEntity.setAvg(this.sum.get() / this.totalCount.get());
             } else {
                 transactionForwardEntity.setAvg(0);
             }
-            transactionDao.insert(transactionForwardEntity);
-            minuteStatisticsMap.remove(getKey());
+            minuteStatisticsMap.remove(KEY_GENERATOR_MINUTESTATISTICS.apply(this));
+            transactionPersistService.add(transactionForwardEntity);
         }
 
         public long getPeriodTimestamp() {
@@ -234,10 +230,21 @@ public class TransactionForwardServiceImpl implements ForwardService<Transaction
             this.sum.addAndGet(duration);
             return this;
         }
-
-        @Override
-        public String getKey() {
-            return this.getDomain() + "-" + this.getIp() + "-" + this.getType() + "-" + this.getName() + "-" + this.getCatServer() + "-" + this.getPeriodTimestamp();
-        }
     }
+
+    private Function<TransactionForwardDomain, String> KEY_GENERATOR_TRANSACTIONFORWARDDOMAIN = new Function<TransactionForwardDomain, String>() {
+        @Override
+        public String apply(TransactionForwardDomain transactionForwardDomain) {
+            return transactionForwardDomain.getDomain() + "-" + transactionForwardDomain.getIp() + "-"
+                    + transactionForwardDomain.getType() + "-" + transactionForwardDomain.getName() + "-" + transactionForwardDomain.getPeriodTimeStamp();
+        }
+    };
+
+    private Function<MinuteStatistics, String> KEY_GENERATOR_MINUTESTATISTICS = new Function<MinuteStatistics, String>() {
+        @Override
+        public String apply(MinuteStatistics minuteStatistics) {
+            return minuteStatistics.getDomain() + "-" + minuteStatistics.getIp() + "-" + minuteStatistics.getType()
+                    + "-" + minuteStatistics.getName() + "-" + minuteStatistics.getCatServer() + "-" + minuteStatistics.getPeriodTimestamp();
+        }
+    };
 }

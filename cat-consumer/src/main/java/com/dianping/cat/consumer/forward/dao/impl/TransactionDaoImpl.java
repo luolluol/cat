@@ -1,12 +1,12 @@
 package com.dianping.cat.consumer.forward.dao.impl;
 
 import com.dianping.cat.consumer.forward.dao.TransactionDao;
-import com.dianping.cat.consumer.forward.entity.TransactionForwardEntity;
 import com.dianping.cat.consumer.forward.factory.InfluxDBClientHolder;
 import org.influxdb.InfluxDB;
 import org.influxdb.dto.Point;
 import org.unidal.lookup.annotation.Inject;
 
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class TransactionDaoImpl implements TransactionDao {
@@ -17,20 +17,12 @@ public class TransactionDaoImpl implements TransactionDao {
     private InfluxDBClientHolder influxdbClientHolder;
 
     @Override
-    public void insert(TransactionForwardEntity transactionForwardEntity) {
+    public void insert(long timestamp, Map<String, String> tagMap, Map<String, Long> fieldMap, String measurement) {
         InfluxDB influxDB = influxdbClientHolder.getClient(Boolean.TRUE);
-        Point point = Point.measurement("transaction").time(transactionForwardEntity.getPeriodTimeStamp(), TimeUnit.MILLISECONDS)
-                .tag("domain", transactionForwardEntity.getDomain())
-                .tag("ip", transactionForwardEntity.getIp())
-                .tag("type", transactionForwardEntity.getType())
-                .tag("name", transactionForwardEntity.getName())
-                .tag("catServer", transactionForwardEntity.getCatServer())
-                .addField("totalCount", transactionForwardEntity.getTotalCount())
-                .addField("failCount", transactionForwardEntity.getFailCount())
-                .addField("sum", transactionForwardEntity.getSum())
-                .addField("avg", transactionForwardEntity.getAvg())
-                .build();
-
+        Point.Builder pointBuilder = Point.measurement(measurement).time(timestamp, TimeUnit.MILLISECONDS);
+        tagMap.forEach(pointBuilder::tag);
+        fieldMap.forEach(pointBuilder::addField);
+        Point point = pointBuilder.build();
         if (null != influxdbClientHolder.getUdpPort()) {
             influxDB.write(influxdbClientHolder.getUdpPort(), point.lineProtocol());
         } else {

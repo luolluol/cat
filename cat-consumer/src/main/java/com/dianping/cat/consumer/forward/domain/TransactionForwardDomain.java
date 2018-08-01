@@ -1,5 +1,7 @@
 package com.dianping.cat.consumer.forward.domain;
 
+import com.alibaba.fastjson.JSONObject;
+
 public class TransactionForwardDomain {
 
     private String domain;
@@ -7,6 +9,7 @@ public class TransactionForwardDomain {
     private String type;
     private String name;
     private String status;
+    private long periodTimeStamp;
     private long durationInMillis;
     private long creationTimestamp;
     private long endTimestamp;
@@ -56,6 +59,14 @@ public class TransactionForwardDomain {
         return this;
     }
 
+    public long getPeriodTimeStamp() {
+        return periodTimeStamp;
+    }
+
+    public void setPeriodTimeStamp(long periodTimeStamp) {
+        this.periodTimeStamp = periodTimeStamp;
+    }
+
     public long getDurationInMillis() {
         return durationInMillis;
     }
@@ -85,13 +96,6 @@ public class TransactionForwardDomain {
 
     @Override
     public String toString() {
-        return "domain=" + domain +
-                ",ip=" + ip +
-                ",type=" + type +
-                ",name=" + name +
-                ",status=" + status +
-                ",durationInMillis=" + durationInMillis +
-                ",creationTimestamp=" + creationTimestamp +
-                ",endTimestamp=" + endTimestamp;
+        return JSONObject.toJSONString(this);
     }
 }

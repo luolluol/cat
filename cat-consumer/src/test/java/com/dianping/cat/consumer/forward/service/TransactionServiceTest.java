@@ -1,7 +1,7 @@
-package com.dianping.cat.consumer.forward.dao;
+package com.dianping.cat.consumer.forward.service;
 
-import com.dianping.cat.consumer.forward.dao.impl.TransactionDaoImpl;
 import com.dianping.cat.consumer.forward.entity.TransactionForwardEntity;
+import com.dianping.cat.consumer.forward.service.impl.TransactionPersistServiceImpl;
 import org.junit.Test;
 import org.unidal.lookup.ComponentTestCase;
 
@@ -10,11 +10,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class TransactionDaoTest extends ComponentTestCase {
+public class TransactionServiceTest extends ComponentTestCase {
+
 
     @Test
     public void test() throws IOException {
-        TransactionDao transactionDao = lookup(TransactionDao.class, TransactionDaoImpl.ID);
+        TransactionPersistService transactionPersistService = lookup(TransactionPersistService.class, TransactionPersistServiceImpl.ID);
 
         List<TransactionForwardEntity> transactionForwardEntityList = new ArrayList<>();
 
@@ -34,7 +35,7 @@ public class TransactionDaoTest extends ComponentTestCase {
 
         long start = System.currentTimeMillis();
         for (TransactionForwardEntity transactionForwardEntity : transactionForwardEntityList) {
-            transactionDao.insert(transactionForwardEntity);
+            transactionPersistService.add(transactionForwardEntity);
         }
         long end = System.currentTimeMillis();
         System.out.println("cost time: " + (end - start) + "ms");
