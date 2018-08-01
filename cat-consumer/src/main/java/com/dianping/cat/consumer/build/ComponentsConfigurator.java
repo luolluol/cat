@@ -1,13 +1,5 @@
 package com.dianping.cat.consumer.build;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import org.unidal.dal.jdbc.configuration.AbstractJdbcResourceConfigurator;
-import org.unidal.initialization.Module;
-import org.unidal.lookup.configuration.Component;
-
 import com.dianping.cat.analysis.MessageAnalyzer;
 import com.dianping.cat.config.content.ContentFetcher;
 import com.dianping.cat.config.content.DefaultContentFetcher;
@@ -27,17 +19,20 @@ import com.dianping.cat.consumer.dump.DumpAnalyzer;
 import com.dianping.cat.consumer.dump.LocalMessageBucketManager;
 import com.dianping.cat.consumer.event.EventAnalyzer;
 import com.dianping.cat.consumer.event.EventDelegate;
+import com.dianping.cat.consumer.forward.ForwardAnalyzer;
+import com.dianping.cat.consumer.forward.dao.TransactionDao;
+import com.dianping.cat.consumer.forward.dao.impl.TransactionDaoImpl;
+import com.dianping.cat.consumer.forward.factory.InfluxDBClientHolder;
+import com.dianping.cat.consumer.forward.factory.impl.InfluxdbClientHolderImpl;
+import com.dianping.cat.consumer.forward.service.ForwardService;
+import com.dianping.cat.consumer.forward.service.impl.TransactionForwardServiceImpl;
 import com.dianping.cat.consumer.heartbeat.HeartbeatAnalyzer;
 import com.dianping.cat.consumer.heartbeat.HeartbeatDelegate;
 import com.dianping.cat.consumer.matrix.MatrixAnalyzer;
 import com.dianping.cat.consumer.matrix.MatrixDelegate;
 import com.dianping.cat.consumer.metric.MetricAnalyzer;
 import com.dianping.cat.consumer.metric.MetricConfigManager;
-import com.dianping.cat.consumer.problem.DefaultProblemHandler;
-import com.dianping.cat.consumer.problem.LongExecutionProblemHandler;
-import com.dianping.cat.consumer.problem.ProblemAnalyzer;
-import com.dianping.cat.consumer.problem.ProblemDelegate;
-import com.dianping.cat.consumer.problem.ProblemHandler;
+import com.dianping.cat.consumer.problem.*;
 import com.dianping.cat.consumer.state.StateAnalyzer;
 import com.dianping.cat.consumer.state.StateDelegate;
 import com.dianping.cat.consumer.storage.StorageAnalyzer;
@@ -54,14 +49,17 @@ import com.dianping.cat.core.dal.ProjectDao;
 import com.dianping.cat.hadoop.hdfs.HdfsUploader;
 import com.dianping.cat.message.PathBuilder;
 import com.dianping.cat.message.storage.MessageBucketManager;
-import com.dianping.cat.report.DefaultReportManager;
-import com.dianping.cat.report.DomainValidator;
-import com.dianping.cat.report.ReportBucketManager;
-import com.dianping.cat.report.ReportDelegate;
-import com.dianping.cat.report.ReportManager;
+import com.dianping.cat.report.*;
 import com.dianping.cat.service.ProjectService;
 import com.dianping.cat.statistic.ServerStatisticManager;
 import com.dianping.cat.task.TaskManager;
+import org.unidal.dal.jdbc.configuration.AbstractJdbcResourceConfigurator;
+import org.unidal.initialization.Module;
+import org.unidal.lookup.configuration.Component;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 public class ComponentsConfigurator extends AbstractJdbcResourceConfigurator {
 	public static void main(String[] args) {
@@ -84,6 +82,7 @@ public class ComponentsConfigurator extends AbstractJdbcResourceConfigurator {
 		all.addAll(defineDependencyComponents());
 		all.addAll(defineMetricComponents());
 		all.addAll(defineStorageComponents());
+		all.addAll(defineForwardComponents());
 
 		all.add(C(AllReportConfigManager.class).req(ConfigDao.class, ContentFetcher.class));
 		all.add(C(Module.class, CatConsumerModule.ID, CatConsumerModule.class));
@@ -287,6 +286,15 @@ public class ComponentsConfigurator extends AbstractJdbcResourceConfigurator {
 		// database
 		all.add(defineJdbcDataSourceConfigurationManagerComponent("/data/appdatas/cat/datasources.xml"));
 
+		return all;
+	}
+
+	private Collection<Component> defineForwardComponents() {
+		final List<Component> all = new ArrayList<Component>();
+		all.add(C(InfluxDBClientHolder.class, InfluxdbClientHolderImpl.ID, InfluxdbClientHolderImpl.class).is(PER_LOOKUP));
+		all.add(C(TransactionDao.class, TransactionDaoImpl.ID, TransactionDaoImpl.class).is(PER_LOOKUP).req(InfluxDBClientHolder.class));
+		all.add(C(ForwardService.class, TransactionForwardServiceImpl.ID, TransactionForwardServiceImpl.class).is(PER_LOOKUP).req(TransactionDao.class));
+		all.add(C(MessageAnalyzer.class, ForwardAnalyzer.ID, ForwardAnalyzer.class).is(PER_LOOKUP).req(ServerConfigManager.class, ForwardService.class));
 		return all;
 	}
 }
