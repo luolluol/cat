@@ -246,7 +246,7 @@ public class TransactionForwardServiceImpl implements ForwardService<Transaction
         @Override
         public String apply(MinuteStatistics minuteStatistics) {
             return minuteStatistics.getDomain() + "-" + minuteStatistics.getIp() + "-" + minuteStatistics.getType()
-                    + "-" + minuteStatistics.getName() + "-" + minuteStatistics.getCatServer() + "-" + minuteStatistics.getPeriodTimestamp();
+                    + "-" + minuteStatistics.getName() + "-" + minuteStatistics.getPeriodTimestamp();
         }
     };
 }
