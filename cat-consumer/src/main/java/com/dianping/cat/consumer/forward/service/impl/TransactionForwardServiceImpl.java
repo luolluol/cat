@@ -86,7 +86,7 @@ public class TransactionForwardServiceImpl implements ForwardService<Transaction
     public void initialize() throws InitializationException {
         minuteStatisticsMap = Collections.synchronizedMap(new LinkedHashMap<>());
         delayQueue = new DelayQueue<>();
-        threadPoolExecutor = new ThreadPoolExecutor(1, 1, 60L, TimeUnit.SECONDS, delayQueue,
+        threadPoolExecutor = new ThreadPoolExecutor(10, 20, 60L, TimeUnit.SECONDS, delayQueue,
                 new ThreadPoolExecutor.DiscardOldestPolicy());
         threadPoolExecutor.prestartAllCoreThreads();
     }
