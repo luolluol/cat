@@ -44,7 +44,11 @@ public class TransactionPersistServiceImpl implements TransactionPersistService,
             String otherSide;
             String facadeName;
             String facadeMethod;
-            if (nameSplit.length == 3) {
+            if (nameSplit.length > 3) {
+                otherSide = "Unknown";
+                facadeName = nameSplit[nameSplit.length - 2];
+                facadeMethod = nameSplit[nameSplit.length - 1];
+            } else if (nameSplit.length == 3) {
                 otherSide = nameSplit[0];
                 facadeName = nameSplit[1];
                 facadeMethod = nameSplit[2];

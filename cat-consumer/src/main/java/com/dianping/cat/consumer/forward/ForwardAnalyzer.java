@@ -60,6 +60,11 @@ public class ForwardAnalyzer extends AbstractMessageAnalyzer<Object> implements 
         if ("_CatMergeTree".equals(transactionType)) {
             return;
         }
+        String domain = root.getDomain();
+        if(domain.startsWith("1")){//没有domain名称的抛弃
+            return;
+        }
+
         TransactionForwardDomain transactionForwardDomain = new TransactionForwardDomain();
         transactionForwardDomain.setDomain(root.getDomain());
         transactionForwardDomain.setIp(root.getIp());
