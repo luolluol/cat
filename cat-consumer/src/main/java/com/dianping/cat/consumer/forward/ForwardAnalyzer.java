@@ -61,7 +61,7 @@ public class ForwardAnalyzer extends AbstractMessageAnalyzer<Object> implements 
             return;
         }
         String domain = root.getDomain();
-        if(domain.startsWith("1")){//没有domain名称的抛弃
+        if(domain.startsWith("1")){//没有domain名称的抛弃，ip开头的抛弃
             return;
         }
 
