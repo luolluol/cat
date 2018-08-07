@@ -1,5 +1,7 @@
 package com.dianping.cat.consumer.forward.entity;
 
+import com.alibaba.fastjson.JSONObject;
+
 public class TransactionForwardEntity {
 
     private String domain;
@@ -100,5 +102,10 @@ public class TransactionForwardEntity {
 
     public void setAvg(long avg) {
         this.avg = avg;
+    }
+
+    @Override
+    public String toString() {
+        return JSONObject.toJSONString(this);
     }
 }

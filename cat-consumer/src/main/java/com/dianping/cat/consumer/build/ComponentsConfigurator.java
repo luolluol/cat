@@ -20,6 +20,7 @@ import com.dianping.cat.consumer.dump.LocalMessageBucketManager;
 import com.dianping.cat.consumer.event.EventAnalyzer;
 import com.dianping.cat.consumer.event.EventDelegate;
 import com.dianping.cat.consumer.forward.ForwardAnalyzer;
+import com.dianping.cat.consumer.forward.TransactionSqlDao;
 import com.dianping.cat.consumer.forward.dao.TransactionDao;
 import com.dianping.cat.consumer.forward.dao.impl.TransactionDaoImpl;
 import com.dianping.cat.consumer.forward.factory.InfluxDBClientHolder;
@@ -89,6 +90,7 @@ public class ComponentsConfigurator extends AbstractJdbcResourceConfigurator {
 		all.add(C(AllReportConfigManager.class).req(ConfigDao.class, ContentFetcher.class));
 		all.add(C(Module.class, CatConsumerModule.ID, CatConsumerModule.class));
 		all.addAll(new CatDatabaseConfigurator().defineComponents());
+		all.addAll(new ForwardDatabaseConfigurator().defineComponents());
 		return all;
 	}
 
@@ -295,7 +297,7 @@ public class ComponentsConfigurator extends AbstractJdbcResourceConfigurator {
 		final List<Component> all = new ArrayList<Component>();
 		all.add(C(InfluxDBClientHolder.class, InfluxdbClientHolderImpl.ID, InfluxdbClientHolderImpl.class).is(PER_LOOKUP));
 		all.add(C(TransactionDao.class, TransactionDaoImpl.ID, TransactionDaoImpl.class).is(PER_LOOKUP).req(InfluxDBClientHolder.class));
-		all.add(C(TransactionPersistService.class, TransactionPersistServiceImpl.ID, TransactionPersistServiceImpl.class).is(PER_LOOKUP).req(TransactionDao.class));
+		all.add(C(TransactionPersistService.class, TransactionPersistServiceImpl.ID, TransactionPersistServiceImpl.class).is(PER_LOOKUP).req(TransactionDao.class, TransactionSqlDao.class));
 		all.add(C(ForwardService.class, TransactionForwardServiceImpl.ID, TransactionForwardServiceImpl.class).is(PER_LOOKUP).req(TransactionPersistService.class));
 		all.add(C(MessageAnalyzer.class, ForwardAnalyzer.ID, ForwardAnalyzer.class).is(PER_LOOKUP).req(ServerConfigManager.class, ForwardService.class));
 		return all;

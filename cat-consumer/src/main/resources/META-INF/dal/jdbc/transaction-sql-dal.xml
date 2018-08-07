@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entities do-package="com.dianping.cat.consumer.forward" gen="true">
+	<entity name="transaction-sql" table="transaction_sql" alias="b">
+		<query-defs>
+			<query name="insert" type="INSERT">
+				<statement><![CDATA[
+					INSERT 
+					INTO <TABLE/>(<FIELDS/>) 
+					VALUES(<VALUES/>)
+				]]></statement>
+			</query>
+		</query-defs>
+	</entity>
+</entities>
