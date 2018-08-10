@@ -30,6 +30,7 @@ public class TransactionForwardServiceImpl implements ForwardService<Transaction
 
     private BlockingQueue delayQueue;
 
+    private static final int MAX_PERIOD_WATI_MILLSECONDS_SAFTY = 70000;
     private static final int MAX_PERIOD_WATI_MILLSECONDS = 75000;
 
     @Inject
@@ -43,7 +44,7 @@ public class TransactionForwardServiceImpl implements ForwardService<Transaction
         transactionForwardDomain.setPeriodTimeStamp(periodTimeStamp);
 
         long now = System.currentTimeMillis();
-        if (periodTimeStamp + MAX_PERIOD_WATI_MILLSECONDS < now) {//保护策略，按分钟分片后，70秒以前的分片消息丢弃
+        if (periodTimeStamp + MAX_PERIOD_WATI_MILLSECONDS_SAFTY < now) {//保护策略，按分钟分片后，70秒以前的分片消息丢弃
             m_logger.info("失效消息丢弃！ " + transactionForwardDomain);
             return 0;
         }
@@ -139,8 +140,8 @@ public class TransactionForwardServiceImpl implements ForwardService<Transaction
             } else {
                 transactionForwardEntity.setAvg(0);
             }
-            minuteStatisticsMap.remove(KEY_GENERATOR_MINUTESTATISTICS.apply(this));
             transactionPersistService.add(transactionForwardEntity);
+            minuteStatisticsMap.remove(KEY_GENERATOR_MINUTESTATISTICS.apply(this));
         }
 
         public long getPeriodTimestamp() {

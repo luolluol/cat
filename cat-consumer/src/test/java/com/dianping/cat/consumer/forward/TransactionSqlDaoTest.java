@@ -11,15 +11,20 @@ public class TransactionSqlDaoTest extends ComponentTestCase {
     @Test
     public void test() throws DalException {
         TransactionSqlDao dao = lookup(TransactionSqlDao.class);
-        TransactionSql proto = new TransactionSql();
-
-        proto.setPeriod(new Date());
-        proto.setDomain("domain");
-        proto.setIp("ip");
-        proto.setName("name");
-        proto.setCatServer("catserver");
-        proto.setCreationDate(new Date());
-        dao.insert(proto);
+        long start = System.currentTimeMillis();
+        for(int i=0;i<10000;i++){
+            TransactionSql proto = new TransactionSql();
+            proto.setPeriod(new Date());
+            proto.setDomain("domain");
+            proto.setIp("ip");
+            proto.setName("name");
+            proto.setCatServer("catserver");
+            proto.setCreationDate(new Date());
+            dao.insert(proto);
+        }
+        long end = System.currentTimeMillis();
+        long cost = end - start;
+        System.out.println("cost: " + cost + " ms");
     }
 
 }
