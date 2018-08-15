@@ -19,6 +19,7 @@ public class ForwardAnalyzerTest extends ComponentTestCase {
     private long m_timestamp;
 
     private ForwardAnalyzer m_analyzer;
+    private ForwardAnalyzer m_analyzer2;
 
     private String m_domain = "group";
 
@@ -28,6 +29,7 @@ public class ForwardAnalyzerTest extends ComponentTestCase {
 
         m_timestamp = System.currentTimeMillis() - System.currentTimeMillis() % (3600 * 1000);
         m_analyzer = (ForwardAnalyzer) lookup(MessageAnalyzer.class, ForwardAnalyzer.ID);
+        m_analyzer2 = (ForwardAnalyzer) lookup(MessageAnalyzer.class, ForwardAnalyzer.ID);
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd HH:mm");
         Date date = sdf.parse("20120101 00:00");
 

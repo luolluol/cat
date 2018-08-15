@@ -295,10 +295,10 @@ public class ComponentsConfigurator extends AbstractJdbcResourceConfigurator {
 
 	private Collection<Component> defineForwardComponents() {
 		final List<Component> all = new ArrayList<Component>();
-		all.add(C(InfluxDBClientHolder.class, InfluxdbClientHolderImpl.ID, InfluxdbClientHolderImpl.class).is(PER_LOOKUP));
-		all.add(C(TransactionDao.class, TransactionDaoImpl.ID, TransactionDaoImpl.class).is(PER_LOOKUP).req(InfluxDBClientHolder.class));
-		all.add(C(TransactionPersistService.class, TransactionPersistServiceImpl.ID, TransactionPersistServiceImpl.class).is(PER_LOOKUP).req(TransactionDao.class, TransactionSqlDao.class));
-		all.add(C(ForwardService.class, TransactionForwardServiceImpl.ID, TransactionForwardServiceImpl.class).is(PER_LOOKUP).req(TransactionPersistService.class));
+		all.add(C(InfluxDBClientHolder.class, InfluxdbClientHolderImpl.ID, InfluxdbClientHolderImpl.class).is("singleton"));
+		all.add(C(TransactionDao.class, TransactionDaoImpl.ID, TransactionDaoImpl.class).is("singleton").req(InfluxDBClientHolder.class));
+		all.add(C(TransactionPersistService.class, TransactionPersistServiceImpl.ID, TransactionPersistServiceImpl.class).is("singleton").req(TransactionDao.class, TransactionSqlDao.class));
+		all.add(C(ForwardService.class, TransactionForwardServiceImpl.ID, TransactionForwardServiceImpl.class).is("singleton").req(TransactionPersistService.class));
 		all.add(C(MessageAnalyzer.class, ForwardAnalyzer.ID, ForwardAnalyzer.class).is(PER_LOOKUP).req(ServerConfigManager.class, ForwardService.class));
 		return all;
 	}
